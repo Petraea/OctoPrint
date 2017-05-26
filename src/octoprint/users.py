@@ -422,7 +422,7 @@ class PAMFileUserManager(FileBasedUserManager):
 		if not user:
 			return False
 		pwauth = Popen(['/usr/sbin/pwauth'],stdin=PIPE)
-		pwauth.communicate(user+'\n'+password')
+		pwauth.communicate(user+'\n'+password)
 		if pwauth.returncode > 0:
 			return False
 		return True
