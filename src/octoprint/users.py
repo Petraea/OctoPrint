@@ -400,6 +400,33 @@ class FilebasedUserManager(UserManager):
 	def hasBeenCustomized(self):
 		return self._customized
 
+from subprocess import Popen, PIPE
+
+class PAMFileUserManager(FileBasedUserManager):
+	def changeUserPassword(self, username, password):
+		pass
+
+	def addUser(self, username, password, active=False, roles=None, apikey=None, overwrite=False):
+		if not roles:
+			roles = ["user"]
+
+		if username in self._users.keys() and not overwrite:
+			raise UserAlreadyExists(username)
+
+		self._users[username] = User(username, '', active, roles, apikey=apikey)
+		self._dirty = True
+		self._save()
+
+	def checkPassword(self, username, password):
+		user = self.findUser(username)
+		if not user:
+			return False
+		pwauth = Popen(['/usr/sbin/pwauth'],stdin=PIPE)
+		pwauth.communicate(user+'\n'+password')
+		if pwauth.returncode > 0:
+			return False
+		return True
+
 ##~~ Exceptions
 
 class UserAlreadyExists(Exception):
